@@ -16,7 +16,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overscroll-behavior:none;}
-body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-size:15px;padding-bottom:72px;}
+body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-size:15px;padding-bottom:110px;}
 
 /* ── HEADER ── */
 .hdr{padding:16px 18px 12px;border-bottom:1px solid var(--b);position:sticky;top:0;background:rgba(8,8,9,.94);backdrop-filter:blur(16px);z-index:200;display:flex;align-items:center;justify-content:space-between;}
@@ -44,7 +44,7 @@ body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-s
 .dtab.d3.on{background:#48B87A;border-color:#48B87A;color:#fff;}
 
 /* ── DAY CONTENT ── */
-.daybody{display:none;padding:16px;max-width:600px;margin:0 auto;}
+.daybody{display:none;padding:16px 16px 32px;max-width:600px;margin:0 auto;}
 .daybody.on{display:block;}
 .day-hero{padding:4px 0 16px;}
 .day-emoji{font-size:22px;margin-bottom:4px;}
@@ -268,7 +268,7 @@ var DAYS = [
     title:"Glúteos e Isquios", subtitle:"Día Pesado",
     color:"#E8624A",
     desc:"Objetivo: mover peso. Descansa 2-3 min en los primeros 3 ejercicios. Última serie: descendentes.",
-    cardio:"10-15 min cinta inclinada al máximo · paso ligero, no correr",
+    cardio:"10-15 min cinta inclinada al máximo · paso ligero, no correr", cardioIcon:"🚶‍♀️",
     exercises:[
       {name:"Hip Thrust en máquina", sets:"4 × 12-10-8-6", muscles:"Glúteo mayor · Glúteo med.", glute:true,
        tip:"Tu ejercicio rey. Sube peso cada 1-2 semanas. En el punto más alto aprieta el glúteo 1-2 seg antes de bajar. Pies planos, rodillas a 90° arriba, empuja desde los talones nunca desde la punta del pie. Barbilla al pecho para no arquear la lumbar.",
@@ -298,7 +298,7 @@ var DAYS = [
     title:"Tren Superior", subtitle:"y Core",
     color:"#4A9BE8",
     desc:"Firmeza y postura. Descansa 1-1.5 min entre series.",
-    cardio:"20 min elíptica o bicicleta estática · intensidad moderada",
+    cardio:"20 min elíptica o bicicleta estática · intensidad moderada", cardioIcon:"🚴",
     exercises:[
       {name:"Deltoides y tríceps en máquina", sets:"4 × 12-10-8-6", muscles:"Deltoides · Tríceps",
        tip:"Codos a la altura de los hombros al empujar. Sube controlado sin bloquear los codos del todo. Abdomen apretado durante todo el movimiento para proteger la lumbar.",
@@ -333,7 +333,7 @@ var DAYS = [
     title:"Glúteos y Cuádriceps", subtitle:"Tensión y Bombeo",
     color:"#9B4EC8",
     desc:"Día mentalmente exigente. Menos peso que el Día 1, más concentración en contraer.",
-    cardio:"15 min Stairmaster o caminata inclinada · activa glúteo al máximo",
+    cardio:"15 min Stairmaster o caminata inclinada · activa glúteo al máximo", cardioIcon:"🪜",
     exercises:[
       {name:"Hip Thrust en máquina (peso moderado)", sets:"4 × 12-10-10-10", muscles:"Glúteo mayor · Glúteo med.", glute:true,
        tip:"Hoy no es día de máximo peso — baja un 20-30% respecto al Día 1. Concéntrate en apretar el glúteo arriba 2 segundos completos. Este estímulo metabólico es diferente y es lo que da densidad y forma.",
@@ -363,7 +363,7 @@ var DAYS = [
     title:"Brazos, Pecho y Core", subtitle:"Día Dinámico",
     color:"#48B87A",
     desc:"Remata la semana. Descansa 1 min entre series.",
-    cardio:"20-25 min cardio libre · lo que más te apetezca",
+    cardio:"20-25 min cardio libre · lo que más te apetezca", cardioIcon:"🏃‍♀️",
     exercises:[
       {name:"Press banca inclinado en máquina", sets:"4 × 12-10-8-6", muscles:"Pectoral · Deltoides · Tríceps",
        tip:"Banco a 30-45°. Baja controlado hasta rozar el pecho superior, no rebotes. Al subir no bloquees los codos del todo para mantener tensión. Omóplatos juntos y hacia abajo.",
@@ -580,6 +580,9 @@ function buildUI(){
       html += '<div class="mtags">'+mtags+'</div>';
       html += '<div class="setswrap">'+setRows+'</div>';
       if(lastHint) html += '<div class="lasthint">↩ Última vez: '+lastHint+' kg</div>';
+      html += '<div style="padding:10px 14px 2px">';
+      html += '<button onclick="markDone('+di+','+ei+')" id="dbn'+di+'_'+ei+'" style="width:100%;padding:9px;border-radius:8px;border:1px solid '+(isDone?'rgba(200,240,74,.3)':'var(--b2)')+';background:'+(isDone?'rgba(200,240,74,.08)':'var(--sur)')+';color:'+(isDone?'var(--acc)':'var(--t3)')+';font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer">'+(isDone?'✓ Completado':'Marcar como hecho')+'</button>';
+      html += '</div>';
       html += '<div class="extras">';
       html += '<textarea class="notein" placeholder="📝 Notas, sensaciones..." id="ni'+di+'_'+ei+'" onblur="saveNote('+di+','+ei+')">'+note+'</textarea>';
       if(ex.youtube){
@@ -593,7 +596,7 @@ function buildUI(){
     });
 
     html += '<div class="secdiv">Cardio</div>';
-    html += '<div class="cardio"><div class="cardio-ico">🏃‍♀️</div><div class="cardio-txt"><strong>'+day.cardio+'</strong></div></div>';
+    html += '<div class="cardio"><div class="cardio-ico">'+day.cardioIcon+'</div><div class="cardio-txt"><strong>'+day.cardio+'</strong></div></div>';
     html += '<div class="compbanner" id="comp'+di+'" style="background:'+day.color+'">🎉 ¡Entrenamiento completado!</div>';
 
     body.innerHTML = html;
@@ -626,7 +629,7 @@ function onWChange(di,ei,si){
   // Check if new PR
   var pr = getPR(DAYS[di].exercises[ei].name);
   var row = document.getElementById("sr"+di+"_"+ei+"_"+si);
-  if(val && pr && parseFloat(val)>=pr){
+  if(val && pr && parseFloat(val)>pr){
     row.classList.add("isnewpr");
   } else {
     row.classList.remove("isnewpr");
@@ -665,11 +668,11 @@ function toggleSet(di,ei,si){
   var card = document.getElementById("exc"+di+"_"+ei);
   card.classList.toggle("alldone", allDone);
 
-  // Check PR
-  if(w){
+  // Check PR - only toast if strictly greater than existing PR
+  if(w && parseFloat(w)>0){
     var pr = getPR(ex.name);
-    if(!pr || parseFloat(w)>pr){
-      toast("🏆 Nuevo PR: "+w+" kg en "+ex.name+"!");
+    if(pr && parseFloat(w)>pr){
+      toast("🏆 Nuevo PR: "+w+" kg!");
     }
   }
 
@@ -943,6 +946,36 @@ function toast(msg){
   var t=document.getElementById("toast");
   t.textContent=msg;t.classList.add("show");
   setTimeout(function(){t.classList.remove("show");},2500);
+}
+
+
+function markDone(di,ei){
+  var ex = DAYS[di].exercises[ei];
+  var sets = parseSets(ex.sets);
+  var current = appData[gk(di,ei,"done",0)];
+  var newVal = !current;
+  appData[gk(di,ei,"done",0)] = newVal;
+  sd(appData);
+  // Update button
+  var btn = document.getElementById("dbn"+di+"_"+ei);
+  if(btn){
+    btn.textContent = newVal ? "✓ Completado" : "Marcar como hecho";
+    btn.style.borderColor = newVal ? "rgba(200,240,74,.3)" : "var(--b2)";
+    btn.style.background = newVal ? "rgba(200,240,74,.08)" : "var(--sur)";
+    btn.style.color = newVal ? "var(--acc)" : "var(--t3)";
+  }
+  // Update card
+  var card = document.getElementById("exc"+di+"_"+ei);
+  if(card) card.classList.toggle("alldone", newVal);
+  updateProg(di);
+  // Save session if all done
+  var done = countDone(di);
+  if(done===DAYS[di].exercises.length){
+    saveSession(di);
+    showConfetti(DAYS[di].color);
+    var comp = document.getElementById("comp"+di);
+    if(comp) comp.classList.add("show");
+  }
 }
 
 // ══ INIT ══
