@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="GYM.LOG">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>GYM.LOG</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
@@ -177,6 +178,10 @@ body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-s
 .prday{font-size:10px;color:var(--t3);margin-top:2px;}
 .prval{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#F0884A;}
 .nodata{font-size:13px;color:var(--t3);text-align:center;padding:24px 0;}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.stat-card{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:14px 10px;text-align:center;}
+.stat-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:4px;}
+.stat-lbl{font-size:10px;color:var(--t3);line-height:1.3;}
 
 /* ── HISTORY ── */
 .hitem{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;}
@@ -224,6 +229,7 @@ body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-s
 <div class="hdr">
   <div class="logo">GYM<span>.</span>LOG</div>
   <div class="hdr-btns">
+    <div class="hdr-btn" onclick="resetDay()">↺ Reiniciar día</div>
     <div class="hdr-btn" onclick="exportCSV()">📥 Exportar</div>
   </div>
 </div>
@@ -655,7 +661,12 @@ function buildUI(){
     });
 
     html += '<div class="secdiv">Cardio</div>';
-    html += '<div class="cardio"><div class="cardio-ico">'+day.cardioIcon+'</div><div class="cardio-txt"><strong>'+day.cardio+'</strong></div></div>';
+    var cardioDone = appData['cardio_'+di]||false;
+    html += '<div class="cardio'+(cardioDone?' done-cardio':'')+'" id="cardio'+di+'" onclick="toggleCardio('+di+')">';
+    html += '<div class="cardio-ico">'+day.cardioIcon+'</div>';
+    html += '<div class="cardio-txt"><strong>'+day.cardio+'</strong>Toca para marcar como hecho</div>';
+    html += '<div class="cardio-chk">✓</div>';
+    html += '</div>';
     html += '<div class="compbanner" id="comp'+di+'" style="background:'+day.color+'">🎉 ¡Entrenamiento completado!</div>';
 
     body.innerHTML = html;
@@ -796,13 +807,44 @@ function setTab(t){
 }
 
 function renderTab(){
-  if(activeTab==="calendar") renderCalendar();
-  else if(activeTab==="prs") renderPRs();
+  var statsHtml = renderStats();
+  if(activeTab==="calendar"){ renderCalendar(); 
+    document.getElementById('tabContent').innerHTML = statsHtml + document.getElementById('tabContent').innerHTML;
+  }
+  else if(activeTab==="prs"){ renderPRs();
+    document.getElementById('tabContent').innerHTML = statsHtml + document.getElementById('tabContent').innerHTML;
+  }
   else if(activeTab==="history") renderHistory();
   else if(activeTab==="chart") renderChart();
 }
 
 var calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+
+function renderStats(){
+  var h = lh();
+  var totalSessions = h.length;
+  // Calculate current streak
+  var streak = 0;
+  var today = new Date();
+  for(var i=0; i<30; i++){
+    var d = new Date(today); d.setDate(d.getDate()-i);
+    var ds = d.toISOString().split('T')[0];
+    if(h.some(function(s){return s.date===ds;})) streak++;
+    else if(i>0) break;
+  }
+  // Total PRs
+  var prCount = 0;
+  DAYS.forEach(function(day,di){
+    day.exercises.forEach(function(ex){
+      if(getPR(ex.name)) prCount++;
+    });
+  });
+  return '<div class="stats-grid">'+
+    '<div class="stat-card"><div class="stat-val">'+totalSessions+'</div><div class="stat-lbl">Sesiones totales</div></div>'+
+    '<div class="stat-card"><div class="stat-val" style="color:var(--acc)">'+streak+'</div><div class="stat-lbl">Racha actual (días)</div></div>'+
+    '<div class="stat-card"><div class="stat-val" style="color:#F0884A">'+prCount+'</div><div class="stat-lbl">Récords personales</div></div>'+
+    '</div>';
+}
 
 function renderCalendar(){
   var h=lh();
@@ -1007,6 +1049,44 @@ function toast(msg){
   setTimeout(function(){t.classList.remove("show");},2500);
 }
 
+
+function toggleCardio(di){
+  appData['cardio_'+di] = !appData['cardio_'+di];
+  sd(appData);
+  var el = document.getElementById('cardio'+di);
+  if(el) el.className = 'cardio'+(appData['cardio_'+di]?' done-cardio':'');
+  // Check if full day complete including cardio
+  var done = countDone(di);
+  if(done===DAYS[di].exercises.length && appData['cardio_'+di]){
+    saveSession(di);
+    showConfetti(DAYS[di].color);
+    var comp = document.getElementById('comp'+di);
+    if(comp) comp.classList.add('show');
+  }
+}
+
+function resetDay(){
+  // Find active day
+  var di = 0;
+  document.querySelectorAll('.dtab').forEach(function(t,i){ if(t.classList.contains('on')) di=i; });
+  var day = DAYS[di];
+  if(!confirm('¿Reiniciar el Día '+(di+1)+'? Se borrarán los pesos y series de hoy.')) return;
+  // Clear all exercise data for this day
+  day.exercises.forEach(function(ex,ei){
+    var sets = parseSets(ex.sets);
+    sets.forEach(function(_,si){
+      delete appData[gk(di,ei,'w',si)];
+    });
+    delete appData[gk(di,ei,'done',0)];
+    delete appData[gk(di,ei,'n',0)];
+  });
+  delete appData['cardio_'+di];
+  sd(appData);
+  buildUI();
+  // Re-switch to same day
+  switchDay(di);
+  toast('Día '+(di+1)+' reiniciado ✓');
+}
 
 function markDone(di,ei){
   var current = appData[gk(di,ei,"done",0)];
