@@ -2,293 +2,676 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gym Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>GYM.LOG</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0b;
-    --surface: #111113;
-    --card: #18181c;
-    --border: #2a2a30;
-    --accent: #c8f04a;
-    --accent2: #ff5c3a;
-    --accent3: #5ce4ff;
-    --text: #f2f2f4;
-    --muted: #5a5a65;
-    --muted2: #3a3a42;
-    --glute: #ffb347;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'Instrument Sans',sans-serif; min-height:100vh; padding-bottom:80px; }
-  .app-header { padding:20px 20px 16px; border-bottom:1px solid var(--border); position:sticky; top:0; background:rgba(10,10,11,0.95); backdrop-filter:blur(12px); z-index:100; }
-  .app-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; letter-spacing:-0.5px; }
-  .app-title span { color:var(--accent); }
-  .day-tabs { display:flex; gap:8px; padding:14px 20px; overflow-x:auto; scrollbar-width:none; border-bottom:1px solid var(--border); }
-  .day-tabs::-webkit-scrollbar { display:none; }
-  .day-tab { flex-shrink:0; padding:8px 16px; border-radius:8px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:'Syne',sans-serif; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
-  .day-tab.d0.active { background:var(--accent); border-color:var(--accent); color:#000; }
-  .day-tab.d1.active { background:var(--accent3); border-color:var(--accent3); color:#000; }
-  .day-tab.d2.active { background:var(--accent2); border-color:var(--accent2); color:#fff; }
-  .day-tab.d3.active { background:#b388ff; border-color:#b388ff; color:#000; }
-  .day-content { display:none; padding:20px; max-width:680px; margin:0 auto; }
-  .day-content.active { display:block; }
-  .day-hero { padding:16px 0 20px; }
-  .day-emoji { font-size:26px; margin-bottom:6px; }
-  .day-name { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; line-height:1.1; margin-bottom:8px; }
-  .day-desc { font-size:13px; color:var(--muted); line-height:1.6; border-left:2px solid var(--border); padding-left:12px; }
-  .day-progress { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
-  .progress-bar { flex:1; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
-  .progress-fill { height:100%; border-radius:2px; transition:width 0.3s ease; width:0%; }
-  .progress-text { font-size:11px; color:var(--muted); white-space:nowrap; font-weight:500; }
-  .exercise-card { background:var(--card); border:1px solid var(--border); border-radius:14px; margin-bottom:10px; overflow:hidden; transition:border-color 0.15s; }
-  .exercise-card.glute-focus { border-left:3px solid var(--glute); }
-  .exercise-header { display:flex; align-items:center; gap:12px; padding:13px 16px; cursor:pointer; user-select:none; }
-  .ex-number { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; color:var(--muted); width:18px; flex-shrink:0; }
-  .ex-info { flex:1; min-width:0; }
-  .ex-name { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .ex-sets-label { font-size:11px; color:var(--muted); }
-  .ex-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
-  .glute-tag { font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; background:rgba(255,179,71,0.15); color:var(--glute); letter-spacing:0.5px; flex-shrink:0; }
-  .sets-done-badge { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; padding:3px 8px; border-radius:5px; background:var(--muted2); color:var(--muted); }
-  .sets-done-badge.complete { background:rgba(200,240,74,0.15); color:var(--accent); }
-  .expand-btn { width:26px; height:26px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; transition:all 0.15s; }
-  .exercise-card.expanded .expand-btn { transform:rotate(180deg); }
-  .exercise-panel { display:none; border-top:1px solid var(--border); padding:16px; background:rgba(0,0,0,0.25); }
-  .exercise-card.expanded .exercise-panel { display:block; }
-  .tip-box { padding:12px 14px; border-radius:10px; margin-bottom:16px; font-size:13px; line-height:1.6; }
-  .tip-box.general { background:rgba(92,228,255,0.06); border:1px solid rgba(92,228,255,0.15); color:#a8eeff; }
-  .tip-box.glute { background:rgba(255,179,71,0.07); border:1px solid rgba(255,179,71,0.2); color:#ffd8a0; }
-  .tip-box-label { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:6px; opacity:0.7; }
-  .panel-label { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
-  .sets-table { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
-  .set-row { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--surface); border:1px solid var(--border); border-radius:10px; }
-  .set-row.done { border-color:rgba(200,240,74,0.3); background:rgba(200,240,74,0.04); }
-  .set-label { font-family:'Syne',sans-serif; font-size:12px; font-weight:700; color:var(--muted); width:52px; flex-shrink:0; }
-  .set-row.done .set-label { color:var(--accent); }
-  .set-weight-input { flex:1; background:transparent; border:none; border-bottom:1px solid var(--border); color:var(--text); font-family:'Syne',sans-serif; font-size:15px; font-weight:700; padding:2px 4px; outline:none; min-width:0; }
-  .set-weight-input:focus { border-color:var(--accent); }
-  .set-weight-input::placeholder { color:var(--muted2); font-weight:400; font-size:13px; }
-  .set-kg { font-size:11px; color:var(--muted); flex-shrink:0; }
-  .set-check { width:28px; height:28px; border-radius:50%; border:2px solid var(--border); background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; color:transparent; transition:all 0.15s; flex-shrink:0; }
-  .set-row.done .set-check { background:var(--accent); border-color:var(--accent); color:#000; }
-  .notes-input { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-family:'Instrument Sans',sans-serif; font-size:13px; outline:none; resize:none; height:60px; line-height:1.5; margin-bottom:14px; }
-  .notes-input::placeholder { color:var(--muted); }
-  .yt-row { display:flex; gap:8px; align-items:center; }
-  .yt-input { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-family:'Instrument Sans',sans-serif; font-size:12px; outline:none; min-width:0; }
-  .yt-input::placeholder { color:var(--muted); }
-  .yt-save-btn { padding:9px 13px; border-radius:8px; border:none; background:#ff2222; color:#fff; font-family:'Syne',sans-serif; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; flex-shrink:0; }
-  .yt-link { display:none; margin-top:8px; }
-  .yt-link.visible { display:block; }
-  .yt-link a { display:inline-flex; align-items:center; gap:6px; color:#ff4444; font-size:12px; text-decoration:none; padding:6px 12px; background:rgba(255,0,0,0.08); border-radius:6px; border:1px solid rgba(255,0,0,0.2); }
-  .section-divider { font-size:10px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin:20px 0 10px; display:flex; align-items:center; gap:10px; }
-  .section-divider::after { content:''; flex:1; height:1px; background:var(--border); }
-  .cardio-block { padding:14px 16px; background:var(--card); border:1px solid var(--border); border-radius:12px; display:flex; align-items:center; gap:12px; }
-  .cardio-icon { font-size:22px; }
-  .cardio-text { font-size:13px; color:var(--muted); line-height:1.5; }
-  .cardio-text strong { color:var(--text); display:block; font-size:14px; margin-bottom:2px; }
-  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--accent); color:#000; font-family:'Syne',sans-serif; font-size:13px; font-weight:700; padding:10px 20px; border-radius:20px; z-index:999; transition:transform 0.3s ease; pointer-events:none; }
-  .toast.show { transform:translateX(-50%) translateY(0); }
+:root {
+  --bg: #080809;
+  --surface: #0f0f11;
+  --card: #161619;
+  --card2: #1c1c20;
+  --border: #252529;
+  --border2: #2e2e34;
+  --accent: #c8f04a;
+  --accent-dim: rgba(200,240,74,0.12);
+  --accent2: #ff5c3a;
+  --accent3: #5ce4ff;
+  --purple: #b388ff;
+  --orange: #ffb347;
+  --text: #f0f0f2;
+  --text2: #9090a0;
+  --text3: #505058;
+  --r: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; padding-bottom:100px; font-size:15px; }
+
+/* HEADER */
+.header {
+  padding:18px 20px 14px;
+  border-bottom:1px solid var(--border);
+  position:sticky; top:0;
+  background:rgba(8,8,9,0.92);
+  backdrop-filter:blur(16px);
+  z-index:200;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.5px; }
+.logo span { color:var(--accent); }
+.header-right { display:flex; align-items:center; gap:10px; }
+.pr-btn {
+  font-size:11px; font-weight:500; color:var(--text2);
+  background:var(--card); border:1px solid var(--border);
+  padding:5px 10px; border-radius:6px; cursor:pointer;
+}
+
+/* TABS */
+.tabs {
+  display:flex; gap:6px; padding:12px 16px;
+  overflow-x:auto; scrollbar-width:none;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+  position:sticky; top:53px; z-index:190;
+}
+.tabs::-webkit-scrollbar { display:none; }
+.tab {
+  flex-shrink:0; padding:7px 14px;
+  border-radius:8px; border:1px solid var(--border);
+  background:var(--card); color:var(--text3);
+  font-family:'Syne',sans-serif; font-size:11px; font-weight:700;
+  cursor:pointer; transition:all 0.15s; white-space:nowrap;
+  letter-spacing:0.3px;
+}
+.tab.d0.on { background:var(--accent); border-color:var(--accent); color:#000; }
+.tab.d1.on { background:var(--accent3); border-color:var(--accent3); color:#000; }
+.tab.d2.on { background:var(--accent2); border-color:var(--accent2); color:#fff; }
+.tab.d3.on { background:var(--purple); border-color:var(--purple); color:#000; }
+
+/* DAY */
+.day { display:none; padding:16px; max-width:600px; margin:0 auto; }
+.day.on { display:block; }
+
+.day-hero { padding:4px 0 18px; }
+.day-emoji { font-size:24px; margin-bottom:4px; }
+.day-name { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; line-height:1.1; margin-bottom:6px; }
+.day-tip { font-size:12px; color:var(--text2); line-height:1.6; padding-left:10px; border-left:2px solid var(--border2); }
+
+/* PROGRESS */
+.prog-row { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.prog-bar { flex:1; height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:2px; transition:width 0.4s ease; width:0%; }
+.prog-txt { font-size:11px; color:var(--text3); white-space:nowrap; font-weight:500; min-width:30px; text-align:right; }
+
+/* EXERCISE CARD */
+.ex-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  margin-bottom:8px;
+  overflow:hidden;
+  transition:border-color 0.15s;
+}
+.ex-card.glute { border-left:2px solid var(--orange); }
+.ex-card.done-all { border-color:rgba(200,240,74,0.25); }
+
+.ex-head {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 14px; cursor:pointer; user-select:none;
+}
+.ex-num { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; color:var(--text3); width:16px; flex-shrink:0; }
+.ex-body { flex:1; min-width:0; }
+.ex-name { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; margin-bottom:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ex-meta { font-size:11px; color:var(--text2); }
+.ex-right { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.gtag { font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px; background:rgba(255,179,71,0.12); color:var(--orange); letter-spacing:0.5px; }
+.badge {
+  font-family:'Syne',sans-serif; font-size:11px; font-weight:700;
+  padding:2px 7px; border-radius:4px;
+  background:var(--card2); color:var(--text3);
+  min-width:32px; text-align:center;
+}
+.badge.done { background:var(--accent-dim); color:var(--accent); }
+.chevron { font-size:11px; color:var(--text3); transition:transform 0.2s; flex-shrink:0; }
+.ex-card.open .chevron { transform:rotate(180deg); }
+
+/* PANEL */
+.ex-panel { display:none; border-top:1px solid var(--border); }
+.ex-card.open .ex-panel { display:block; }
+
+/* TIP */
+.tip {
+  padding:12px 14px; font-size:12px; line-height:1.65;
+  border-bottom:1px solid var(--border);
+}
+.tip.gen { background:rgba(92,228,255,0.04); color:#8cd8ef; }
+.tip.glu { background:rgba(255,179,71,0.05); color:#e8c080; }
+.tip-lbl { font-family:'Syne',sans-serif; font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:5px; opacity:0.6; }
+
+/* SETS */
+.sets-wrap { padding:12px 14px; border-bottom:1px solid var(--border); }
+.set-row {
+  display:flex; align-items:center; gap:8px;
+  padding:9px 10px; margin-bottom:6px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:8px; transition:border-color 0.15s;
+}
+.set-row:last-child { margin-bottom:0; }
+.set-row.done { border-color:rgba(200,240,74,0.25); background:rgba(200,240,74,0.03); }
+.set-lbl { font-family:'Syne',sans-serif; font-size:11px; font-weight:700; color:var(--text3); width:46px; flex-shrink:0; }
+.set-row.done .set-lbl { color:var(--accent); }
+.set-w {
+  flex:1; background:transparent; border:none;
+  border-bottom:1px solid var(--border2);
+  color:var(--text); font-family:'Syne',sans-serif;
+  font-size:16px; font-weight:700; padding:1px 4px;
+  outline:none; min-width:0;
+}
+.set-w:focus { border-color:var(--accent); }
+.set-w::placeholder { color:var(--text3); font-weight:400; font-size:13px; }
+.set-unit { font-size:11px; color:var(--text3); flex-shrink:0; }
+.set-pr { font-size:9px; color:var(--orange); font-weight:700; margin-right:2px; display:none; }
+.set-row.is-pr .set-pr { display:block; }
+.set-chk {
+  width:26px; height:26px; border-radius:50%;
+  border:2px solid var(--border2); background:transparent;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-size:12px; color:transparent; transition:all 0.15s; flex-shrink:0;
+}
+.set-row.done .set-chk { background:var(--accent); border-color:var(--accent); color:#000; }
+
+/* REST TIMER */
+.rest-bar {
+  display:none; padding:10px 14px;
+  background:rgba(200,240,74,0.06);
+  border-bottom:1px solid rgba(200,240,74,0.1);
+  align-items:center; gap:10px;
+}
+.rest-bar.show { display:flex; }
+.rest-countdown { font-family:'Syne',sans-serif; font-size:18px; font-weight:800; color:var(--accent); min-width:36px; }
+.rest-label { font-size:11px; color:var(--text2); flex:1; }
+.rest-skip { font-size:11px; color:var(--text3); cursor:pointer; padding:4px 8px; border-radius:4px; border:1px solid var(--border); background:var(--card); }
+
+/* NOTES & YT */
+.extras { padding:12px 14px; display:flex; flex-direction:column; gap:10px; }
+.notes-in {
+  width:100%; background:var(--surface); border:1px solid var(--border);
+  border-radius:8px; padding:9px 11px; color:var(--text);
+  font-family:'DM Sans',sans-serif; font-size:13px;
+  outline:none; resize:none; height:56px; line-height:1.5;
+}
+.notes-in::placeholder { color:var(--text3); }
+.yt-row { display:flex; gap:7px; }
+.yt-in {
+  flex:1; background:var(--surface); border:1px solid var(--border);
+  border-radius:8px; padding:9px 11px; color:var(--text);
+  font-family:'DM Sans',sans-serif; font-size:12px; outline:none; min-width:0;
+}
+.yt-in::placeholder { color:var(--text3); }
+.yt-go {
+  padding:9px 12px; border-radius:8px; border:none;
+  background:#e00; color:#fff;
+  font-family:'Syne',sans-serif; font-size:11px; font-weight:700;
+  cursor:pointer; white-space:nowrap; flex-shrink:0;
+}
+.yt-link { display:none; }
+.yt-link.on { display:block; }
+.yt-link a {
+  display:inline-flex; align-items:center; gap:5px;
+  color:#ff5555; font-size:12px; text-decoration:none;
+  padding:6px 11px; background:rgba(255,0,0,0.07);
+  border-radius:6px; border:1px solid rgba(255,0,0,0.18);
+}
+
+/* CARDIO */
+.sec-div {
+  font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text3); margin:18px 0 8px;
+  display:flex; align-items:center; gap:8px;
+}
+.sec-div::after { content:''; flex:1; height:1px; background:var(--border); }
+.cardio {
+  padding:12px 14px; background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r); display:flex; align-items:center; gap:12px;
+}
+.cardio-ico { font-size:20px; }
+.cardio-txt { font-size:12px; color:var(--text2); line-height:1.5; }
+.cardio-txt strong { color:var(--text); display:block; font-size:13px; margin-bottom:1px; }
+
+/* PR MODAL */
+.overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.8); z-index:500;
+  align-items:flex-end; justify-content:center;
+}
+.overlay.on { display:flex; }
+.modal {
+  background:var(--card); border:1px solid var(--border2);
+  border-radius:16px 16px 0 0; width:100%; max-width:600px;
+  padding:20px 20px 40px; max-height:80vh; overflow-y:auto;
+}
+.modal-head {
+  font-family:'Syne',sans-serif; font-size:16px; font-weight:800;
+  margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;
+}
+.modal-close { font-size:20px; cursor:pointer; color:var(--text2); }
+.pr-item {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 0; border-bottom:1px solid var(--border);
+}
+.pr-item:last-child { border-bottom:none; }
+.pr-ex { font-size:13px; }
+.pr-val { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:var(--orange); }
+.no-pr { font-size:13px; color:var(--text3); text-align:center; padding:20px 0; }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:28px; left:50%;
+  transform:translateX(-50%) translateY(80px);
+  background:var(--accent); color:#000;
+  font-family:'Syne',sans-serif; font-size:12px; font-weight:700;
+  padding:9px 18px; border-radius:20px; z-index:999;
+  transition:transform 0.3s ease; pointer-events:none;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ADD TO HOME */
+.a2h {
+  display:none; margin:0 16px 8px;
+  background:var(--accent-dim); border:1px solid rgba(200,240,74,0.2);
+  border-radius:var(--r); padding:10px 14px;
+  font-size:12px; color:var(--accent); line-height:1.5;
+  align-items:center; gap:10px; justify-content:space-between;
+}
+.a2h.show { display:flex; }
+.a2h-close { font-size:16px; cursor:pointer; }
 </style>
 </head>
 <body>
-<div class="app-header"><div class="app-title">GYM<span>.</span>LOG</div></div>
-<div class="day-tabs">
-  <div class="day-tab d0 active" onclick="switchDay(0)">🍑 DÍA 1</div>
-  <div class="day-tab d1" onclick="switchDay(1)">💪 DÍA 2</div>
-  <div class="day-tab d2" onclick="switchDay(2)">🔥 DÍA 3</div>
-  <div class="day-tab d3" onclick="switchDay(3)">🦾 DÍA 4</div>
+
+<div class="header">
+  <div class="logo">GYM<span>.</span>LOG</div>
+  <div class="header-right">
+    <div class="pr-btn" onclick="openPR()">🏆 PRs</div>
+  </div>
 </div>
-<div class="day-content active" id="day-0">
-  <div class="day-hero"><div class="day-emoji">🍑</div><div class="day-name">Glúteos e Isquios<br><span style="color:var(--accent)">Día Pesado</span></div><div class="day-desc">El objetivo hoy es mover peso. Descansa 2-3 minutos en los primeros 3 ejercicios.</div></div>
-  <div class="day-progress"><div class="progress-bar"><div class="progress-fill" id="prog-0" style="background:var(--accent)"></div></div><div class="progress-text" id="progt-0">0 / 6</div></div>
-  <div id="exlist-0"></div>
-  <div class="section-divider">Cardio</div>
-  <div class="cardio-block"><div class="cardio-icon">🚶‍♀️</div><div class="cardio-text"><strong>15-20 min cinta inclinada</strong>Caminata a paso ligero con máxima inclinación.</div></div>
+
+<div class="tabs">
+  <div class="tab d0 on" onclick="switchDay(0)">🍑 DÍA 1</div>
+  <div class="tab d1" onclick="switchDay(1)">💪 DÍA 2</div>
+  <div class="tab d2" onclick="switchDay(2)">🔥 DÍA 3</div>
+  <div class="tab d3" onclick="switchDay(3)">🦾 DÍA 4</div>
 </div>
-<div class="day-content" id="day-1">
-  <div class="day-hero"><div class="day-emoji">💪</div><div class="day-name">Tren Superior<br><span style="color:var(--accent3)">y Core</span></div><div class="day-desc">Mantener la firmeza y la postura. Descansa 1 a 1.5 minutos.</div></div>
-  <div class="day-progress"><div class="progress-bar"><div class="progress-fill" id="prog-1" style="background:var(--accent3)"></div></div><div class="progress-text" id="progt-1">0 / 8</div></div>
-  <div id="exlist-1"></div>
-  <div class="section-divider">Cardio</div>
-  <div class="cardio-block"><div class="cardio-icon">🚴</div><div class="cardio-text"><strong>20 min elíptica o bicicleta</strong>Intensidad moderada.</div></div>
+
+<div class="a2h" id="a2h">
+  📲 Añade esta página a tu pantalla de inicio para usarla como app
+  <span class="a2h-close" onclick="closeA2H()">✕</span>
 </div>
-<div class="day-content" id="day-2">
-  <div class="day-hero"><div class="day-emoji">🔥</div><div class="day-name">Glúteos y Cuádriceps<br><span style="color:var(--accent2)">Tensión y Bombeo</span></div><div class="day-desc">Día mentalmente exigente por el trabajo a una pierna. 6 ejercicios son más que suficientes.</div></div>
-  <div class="day-progress"><div class="progress-bar"><div class="progress-fill" id="prog-2" style="background:var(--accent2)"></div></div><div class="progress-text" id="progt-2">0 / 6</div></div>
-  <div id="exlist-2"></div>
-  <div class="section-divider">Cardio</div>
-  <div class="cardio-block"><div class="cardio-icon">🪜</div><div class="cardio-text"><strong>15 min Stairmaster o caminata inclinada</strong>Máxima activación de glúteo.</div></div>
+
+<div class="day on" id="day-0">
+  <div class="day-hero">
+    <div class="day-emoji">🍑</div>
+    <div class="day-name">Glúteos e Isquios<br><span style="color:var(--accent)">Día Pesado</span></div>
+    <div class="day-tip">El objetivo hoy es mover peso. Descansa 2-3 min en los primeros 3 ejercicios.</div>
+  </div>
+  <div class="prog-row"><div class="prog-bar"><div class="prog-fill" id="pf-0" style="background:var(--accent)"></div></div><div class="prog-txt" id="pt-0">0/6</div></div>
+  <div id="el-0"></div>
+  <div class="sec-div">Cardio</div>
+  <div class="cardio"><div class="cardio-ico">🚶‍♀️</div><div class="cardio-txt"><strong>15-20 min cinta inclinada</strong>Máxima inclinación, paso ligero. Activa el glúteo.</div></div>
 </div>
-<div class="day-content" id="day-3">
-  <div class="day-hero"><div class="day-emoji">🦾</div><div class="day-name">Brazos y Core<br><span style="color:#b388ff">Día Dinámico</span></div><div class="day-desc">Día dinámico para rematar la semana.</div></div>
-  <div class="day-progress"><div class="progress-bar"><div class="progress-fill" id="prog-3" style="background:#b388ff"></div></div><div class="progress-text" id="progt-3">0 / 6</div></div>
-  <div id="exlist-3"></div>
-  <div class="section-divider">Cardio</div>
-  <div class="cardio-block"><div class="cardio-icon">🏃‍♀️</div><div class="cardio-text"><strong>20-25 min cardio libre</strong>Lo que más te apetezca.</div></div>
+
+<div class="day" id="day-1">
+  <div class="day-hero">
+    <div class="day-emoji">💪</div>
+    <div class="day-name">Tren Superior<br><span style="color:var(--accent3)">y Core</span></div>
+    <div class="day-tip">Firmeza y postura. Descansa 1 a 1.5 minutos entre series.</div>
+  </div>
+  <div class="prog-row"><div class="prog-bar"><div class="prog-fill" id="pf-1" style="background:var(--accent3)"></div></div><div class="prog-txt" id="pt-1">0/8</div></div>
+  <div id="el-1"></div>
+  <div class="sec-div">Cardio</div>
+  <div class="cardio"><div class="cardio-ico">🚴</div><div class="cardio-txt"><strong>20 min elíptica o bicicleta</strong>Intensidad moderada.</div></div>
 </div>
+
+<div class="day" id="day-2">
+  <div class="day-hero">
+    <div class="day-emoji">🔥</div>
+    <div class="day-name">Glúteos y Cuádriceps<br><span style="color:var(--accent2)">Tensión y Bombeo</span></div>
+    <div class="day-tip">Día de trabajo unilateral. Exigente mentalmente — concéntrate en cada rep.</div>
+  </div>
+  <div class="prog-row"><div class="prog-bar"><div class="prog-fill" id="pf-2" style="background:var(--accent2)"></div></div><div class="prog-txt" id="pt-2">0/6</div></div>
+  <div id="el-2"></div>
+  <div class="sec-div">Cardio</div>
+  <div class="cardio"><div class="cardio-ico">🪜</div><div class="cardio-txt"><strong>15 min Stairmaster o caminata inclinada</strong>Máxima activación de glúteo.</div></div>
+</div>
+
+<div class="day" id="day-3">
+  <div class="day-hero">
+    <div class="day-emoji">🦾</div>
+    <div class="day-name">Brazos y Core<br><span style="color:var(--purple)">Día Dinámico</span></div>
+    <div class="day-tip">Remata la semana. Descansa 1 minuto entre series.</div>
+  </div>
+  <div class="prog-row"><div class="prog-bar"><div class="prog-fill" id="pf-3" style="background:var(--purple)"></div></div><div class="prog-txt" id="pt-3">0/6</div></div>
+  <div id="el-3"></div>
+  <div class="sec-div">Cardio</div>
+  <div class="cardio"><div class="cardio-ico">🏃‍♀️</div><div class="cardio-txt"><strong>20-25 min cardio libre</strong>Lo que más te apetezca.</div></div>
+</div>
+
+<div class="overlay" id="pr-overlay" onclick="closePRifOutside(event)">
+  <div class="modal">
+    <div class="modal-head">🏆 Récords personales <span class="modal-close" onclick="closePR()">✕</span></div>
+    <div id="pr-list"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
+
 <script>
 var DAYS = [
   { exercises: [
-    { name:"Hip Thrust", sets:4, reps:"8-10 rep", glute:true, tip:"Para crecer el glúteo, este es tu ejercicio rey. Sube el peso cada 1-2 semanas aunque sea 2.5 kg. En el punto más alto aprieta el glúteo 1-2 segundos antes de bajar. Planta los pies planos, rodillas a 90 grados arriba, y empuja desde los talones, nunca desde la punta del pie." },
-    { name:"Peso Muerto Rumano", sets:4, reps:"8-10 rep", glute:true, tip:"Baja el peso hasta sentir el estiramiento profundo en el isquio. No redondees la espalda. Cuanto mas controlada la bajada (3 segundos), mas fibras musculares recluta el gluteo. Progresa de peso cuando puedas hacer 10 rep con buena tecnica." },
-    { name:"Prensa (pies altos y separados)", sets:4, reps:"10-12 rep", glute:true, tip:"Pies en la parte alta de la plataforma, separados al ancho de los hombros. Baja hasta 90 grados o mas. Empuja desde el talon, no desde los dedos. Esta posicion traslada el trabajo del cuadricep al gluteo." },
-    { name:"Patada de gluteo en polea", sets:3, reps:"12-15 rep por pierna", glute:true, tip:"Ve despacio. El gluteo solo crece con contraccion controlada. Arriba aguanta 1 segundo apretando fuerte. Haz todas las series de una pierna antes de cambiar." },
-    { name:"Maquina de Abductores", sets:3, reps:"15 rep", glute:true, tip:"Inclina ligeramente el torso hacia adelante para activar el gluteo medio. Abre lento (2 seg) y cierra controlado (2 seg), no uses rebote. El gluteo medio es el que da forma redondeada a la parte lateral." },
-    { name:"Prensa Gemelos", sets:3, reps:"12-15 rep", glute:false, tip:"Baja el talon lo mas abajo posible para el estiramiento completo. Sube de puntillas hasta arriba y aguanta 1 segundo. Los gemelos responden mejor a contracciones lentas y completas." }
+    { name:"Hip Thrust", sets:4, reps:"8-10 rep", rest:180, glute:true,
+      tip:"Este es tu ejercicio rey para el glúteo. Sube el peso cada 1-2 semanas aunque sean 2.5 kg — la progresión de carga es lo que genera masa. En el punto más alto aprieta el glúteo 1-2 segundos antes de bajar. Pies planos, rodillas a 90 grados arriba, empuja desde los talones nunca desde la punta del pie." },
+    { name:"Peso Muerto Rumano", sets:4, reps:"8-10 rep", rest:180, glute:true,
+      tip:"Baja controlado hasta sentir el estiramiento profundo en el isquio — ahi activas el gluteo inferior. No redondees la espalda. Cuenta 3 segundos bajando: cuanto mas lenta la fase excentrica, mas fibras musculares recluta el gluteo. Progresa de peso cuando llegues a 10 rep limpias." },
+    { name:"Prensa (pies altos y separados)", sets:4, reps:"10-12 rep", rest:180, glute:true,
+      tip:"Pies en la parte alta de la plataforma, separados al ancho de los hombros. Baja hasta 90 grados o mas. Empuja desde el talon — esta posicion traslada el trabajo del cuadricep al gluteo. No bloquees las rodillas al subir. Si sientes mas quad que gluteo, sube mas los pies." },
+    { name:"Patada de gluteo en polea", sets:3, reps:"12-15 rep por pierna", rest:60, glute:true,
+      tip:"Ve despacio — el gluteo crece con contraccion controlada, no con impulso. Arriba aguanta 1 segundo apretando fuerte. Haz todas las series de una pierna antes de cambiar. Sube el peso cuando llegues a 15 rep con buena tecnica en todas las series." },
+    { name:"Maquina de Abductores", sets:3, reps:"15 rep", rest:60, glute:true,
+      tip:"Inclina ligeramente el torso hacia adelante para activar el gluteo medio en lugar del tensor de la fascia lata. Abre lento 2 segundos y cierra controlado 2 segundos. El gluteo medio es el que da la forma redondeada lateral — no lo descuides." },
+    { name:"Prensa Gemelos", sets:3, reps:"12-15 rep", rest:60,
+      tip:"Baja el talon lo mas abajo posible para el estiramiento completo. Sube de puntillas hasta arriba y aguanta 1 segundo apretado. Los gemelos responden mejor a contracciones lentas y completas que a movimientos rapidos." }
   ]},
   { exercises: [
-    { name:"Jalon al pecho (agarre ancho)", sets:4, reps:"10-12 rep", glute:false, tip:"Inclina ligeramente el torso hacia atras y lleva la barra hacia la parte alta del pecho. Piensa en llevar los codos hacia las caderas para activar el dorsal correctamente." },
-    { name:"Remo en polea baja", sets:4, reps:"10-12 rep", glute:false, tip:"Mantén la espalda recta y el pecho abierto. Aprieta las escapulas al final del movimiento durante 1 segundo. Deja que los brazos se estiren del todo al frente." },
-    { name:"Face Pull", sets:3, reps:"12-15 rep", glute:false, tip:"Polea a la altura de los ojos. Lleva las manos hacia tu cara con los codos abiertos y altos. Protege el manguito rotador. No pongas mucho peso, la tecnica importa mas." },
-    { name:"Press banca inclinado", sets:3, reps:"10-12 rep", glute:false, tip:"Inclina el banco entre 30-45 grados. Baja controlado hasta rozar el pecho superior. Mantén los omoplatos juntos y hacia abajo durante todo el movimiento." },
-    { name:"Press militar (Hombros)", sets:3, reps:"10-12 rep", glute:false, tip:"Empuja hacia arriba sin arquear la espalda baja. Activa el abdomen durante todo el ejercicio. Baja controlado hasta que los brazos formen 90 grados." },
-    { name:"Elevaciones laterales", sets:3, reps:"12-15 rep", glute:false, tip:"Levanta con los codos ligeramente doblados, hasta la altura del hombro. Baja despacio, la bajada controlada es tan importante como la subida." },
-    { name:"Elevacion de rodillas al pecho", sets:3, reps:"15 rep", glute:false, tip:"Tumbada, lleva las rodillas hacia el pecho de forma controlada sin usar impulso. Baja lento para trabajar el recto abdominal en su totalidad." },
-    { name:"Plancha abdominal", sets:3, reps:"45-60 seg", glute:false, tip:"Cuerpo en linea recta de cabeza a talones. Aprieta el abdomen, los gluteos y los muslos a la vez. Progresa aumentando 5-10 seg cada semana." }
+    { name:"Jalon al pecho (agarre ancho)", sets:4, reps:"10-12 rep", rest:90,
+      tip:"Inclina el torso ligeramente hacia atras y lleva la barra hacia la parte alta del pecho. Piensa en llevar los codos hacia las caderas — eso activa el dorsal. Baja controlado, no dejes caer el peso. Estira los brazos del todo al subir para el rango completo." },
+    { name:"Remo en polea baja", sets:4, reps:"10-12 rep", rest:90,
+      tip:"Espalda recta, pecho abierto. Aprieta las escapulas al final durante 1 segundo. No encorves los hombros al soltar. Deja que los brazos se estiren del todo al frente — el rango completo es clave para el desarrollo de la espalda." },
+    { name:"Face Pull", sets:3, reps:"12-15 rep", rest:60,
+      tip:"Polea a la altura de los ojos. Lleva las manos hacia tu cara con los codos abiertos y altos. Protege el manguito rotador y corrige la postura de hombros. La tecnica manda aqui — no pongas mucho peso." },
+    { name:"Press banca inclinado", sets:3, reps:"10-12 rep", rest:90,
+      tip:"Banco a 30-45 grados. Baja controlado hasta rozar el pecho superior. No rebotes. Al subir no bloquees los codos del todo para mantener tension en el pectoral. Omoplatos juntos y hacia abajo durante todo el movimiento." },
+    { name:"Press militar (Hombros)", sets:3, reps:"10-12 rep", rest:90,
+      tip:"Empuja arriba sin arquear la espalda baja — abdomen apretado todo el tiempo. No bloquees los codos arriba. Baja controlado hasta 90 grados. Usa un peso que te permita hacer las rep sin compensar con el torso." },
+    { name:"Elevaciones laterales", sets:3, reps:"12-15 rep", rest:60,
+      tip:"Codos ligeramente doblados, sube hasta la altura del hombro. Baja despacio — la bajada controlada es tan importante como la subida. Peso ligero y tecnica limpia dan mejores resultados que ir pesado con balanceo." },
+    { name:"Elevacion de rodillas al pecho", sets:3, reps:"15 rep", rest:45,
+      tip:"Tumbada, lleva las rodillas hacia el pecho sin usar impulso. Baja lento trabajando el recto abdominal en su totalidad. Para progresar, estira las piernas al bajar en lugar de doblar las rodillas." },
+    { name:"Plancha abdominal", sets:3, reps:"45-60 seg", rest:45,
+      tip:"Cuerpo en linea recta de cabeza a talones. Aprieta abdomen, gluteos y muslos a la vez. No eleves ni bajes la cadera. Si tiemblas antes de tiempo, baja a rodillas manteniendo la postura. Progresa 5-10 seg cada semana." }
   ]},
   { exercises: [
-    { name:"Sentadilla (maquina o libre)", sets:4, reps:"8-10 rep", glute:true, tip:"Para mas gluteo: baja por debajo del paralelo. Separa los pies al ancho de los hombros con las puntas hacia afuera. Al subir, empuja el suelo con los talones y aprieta el gluteo arriba." },
-    { name:"Sentadilla Bulgara", sets:3, reps:"10-12 rep por pierna", glute:true, tip:"El ejercicio que mas va a transformar tu gluteo. Zancada larga hacia adelante, mas gluteo y menos cuadriceps. Baja hasta que la rodilla trasera casi toque el suelo. Empuja desde el talon delantero al subir." },
-    { name:"Hip Thrust (peso moderado)", sets:3, reps:"10-12 rep", glute:true, tip:"Hoy no es dia de maximo peso. Baja el peso un 20-30% respecto al Dia 1 y concentrate en apretar el gluteo arriba durante 2 segundos completos. Esto da densidad y forma." },
-    { name:"Extension de cuadriceps", sets:3, reps:"12 rep", glute:false, tip:"Sube controlado y baja muy lento, al menos 3 segundos bajando. La fase excentrica es donde el cuadriceps crece. Aprieta el cuadricep 1 segundo antes de bajar." },
-    { name:"Curl femoral en maquina", sets:3, reps:"12 rep", glute:false, tip:"Baja lento y controlado, sin soltar el peso de golpe. Los isquios responden muy bien a la fase excentrica lenta." },
-    { name:"Abductores (torso adelante)", sets:3, reps:"15 rep", glute:true, tip:"Inclina el torso 30-45 grados hacia adelante antes de abrir. Esto activa el gluteo medio y menor. Abre lento, aguanta 1 segundo y cierra controlado." }
+    { name:"Sentadilla (maquina o libre)", sets:4, reps:"8-10 rep", rest:180, glute:true,
+      tip:"Para mas gluteo baja por debajo del paralelo. Cuanto mas profunda la sentadilla mas recluta el gluteo. Pies al ancho de hombros o mas con puntas hacia afuera. Al subir empuja el suelo con los talones y aprieta el gluteo arriba." },
+    { name:"Sentadilla Bulgara", sets:3, reps:"10-12 rep por pierna", rest:90, glute:true,
+      tip:"El ejercicio que mas va a transformar tu gluteo. Zancada larga hacia adelante — cuanto mas larga, mas gluteo y menos cuadricep. Baja hasta que la rodilla trasera casi toque el suelo. Empuja desde el talon delantero. Haz todas las series de una pierna antes de cambiar." },
+    { name:"Hip Thrust (peso moderado)", sets:3, reps:"10-12 rep", rest:90, glute:true,
+      tip:"Hoy no es dia de maximo peso. Baja un 20-30% respecto al Dia 1 y concentrate en apretar el gluteo arriba durante 2 segundos completos. Este estimulo metabolico es diferente al dia pesado y es lo que da densidad y forma al gluteo." },
+    { name:"Extension de cuadriceps", sets:3, reps:"12 rep", rest:60,
+      tip:"Sube controlado y baja muy lento, minimo 3 segundos bajando. La fase excentrica es donde crece el cuadricep. En el punto mas alto aprieta 1 segundo antes de bajar. No uses inercia." },
+    { name:"Curl femoral en maquina", sets:3, reps:"12 rep", rest:60,
+      tip:"Baja lento y controlado sin soltar el peso de golpe. Los isquios responden muy bien a la fase excentrica lenta. Si puedes usa la variante unilateral para detectar y corregir desequilibrios entre piernas." },
+    { name:"Abductores (torso adelante)", sets:3, reps:"15 rep", rest:60, glute:true,
+      tip:"Inclina el torso 30-45 grados antes de abrir. Esto activa el gluteo medio y menor en lugar del TFL. Abre lento, aguanta 1 segundo abierta y cierra controlado. Un detalle pequeño que marca gran diferencia en donde sientes el trabajo." }
   ]},
   { exercises: [
-    { name:"Fondos en banco (Triceps)", sets:3, reps:"10-12 rep", glute:false, tip:"Manos cerca del cuerpo, codos hacia atras. Baja hasta que los brazos formen 90 grados. Si es muy facil, eleva los pies en otro banco." },
-    { name:"Extension de triceps en polea", sets:3, reps:"12 rep", glute:false, tip:"Codos pegados al cuerpo durante todo el movimiento. Extiende completamente los brazos y aguanta 1 segundo abajo. Baja controlado." },
-    { name:"Curl de biceps con mancuernas", sets:3, reps:"12 rep", glute:false, tip:"Sube rotando la muneca hacia afuera al llegar arriba. No balancees el torso. Baja lento, 3 segundos, para aprovechar la fase excentrica." },
-    { name:"Curl martillo alterno", sets:3, reps:"12 rep", glute:false, tip:"El agarre neutro activa el braquial y da grosor al brazo. Sube sin girar la muneca. Mantén el codo pegado al costado durante todo el movimiento." },
-    { name:"Crunch abdominal en polea o suelo", sets:3, reps:"15 rep", glute:false, tip:"En polea: dobla el torso hacia abajo apretando el abdomen, no tires con los brazos. En suelo: manos detras de la cabeza sin tirar del cuello." },
-    { name:"Plancha lateral", sets:3, reps:"30-45 seg por lado", glute:false, tip:"Cuerpo en linea recta. La cadera no debe caer ni subir. Para progresar, levanta la pierna de arriba unos centimetros activando el gluteo medio y el oblicuo." }
+    { name:"Fondos en banco (Triceps)", sets:3, reps:"10-12 rep", rest:60,
+      tip:"Manos cerca del cuerpo, codos hacia atras no hacia los lados. Baja hasta 90 grados, sube sin bloquear los codos del todo. Si es facil, eleva los pies en otro banco. Para mas dificultad anade un peso en el regazo." },
+    { name:"Extension de triceps en polea", sets:3, reps:"12 rep", rest:60,
+      tip:"Codos pegados al cuerpo todo el tiempo — si se mueven el triceps pierde tension. Extiende completamente y aguanta 1 segundo abajo. Baja controlado. Prueba con cuerda y con barra para notar diferencia de activacion." },
+    { name:"Curl de biceps con mancuernas", sets:3, reps:"12 rep", rest:60,
+      tip:"Sube rotando la muneca hacia afuera al llegar arriba — activa mas el biceps. No balancees el torso. Baja 3 segundos para aprovechar la fase excentrica. Alterna brazos para mas concentracion en cada rep." },
+    { name:"Curl martillo alterno", sets:3, reps:"12 rep", rest:60,
+      tip:"El agarre neutro activa el braquial y da grosor al brazo que el curl normal no da. Sube sin girar la muneca. Codo pegado al costado durante todo el movimiento." },
+    { name:"Crunch abdominal en polea o suelo", sets:3, reps:"15 rep", rest:45,
+      tip:"En polea: agarra la cuerda a la altura de la nuca y dobla el torso hacia abajo apretando el abdomen, no tires con los brazos. En suelo: manos detras de la cabeza sin tirar del cuello. Lo importante es la contraccion, no el recorrido." },
+    { name:"Plancha lateral", sets:3, reps:"30-45 seg por lado", rest:45,
+      tip:"Cuerpo en linea recta. La cadera no debe caer ni subir. Para progresar levanta la pierna de arriba unos centimetros — activa gluteo medio y oblicuo a la vez. Respira con normalidad, no aguantes el aliento." }
   ]}
 ];
 
-function load() { try { return JSON.parse(localStorage.getItem('gymlog4') || '{}'); } catch(e) { return {}; } }
-function save(d) { try { localStorage.setItem('gymlog4', JSON.stringify(d)); } catch(e) {} }
-var DB = load();
-function k(d,e,f) { return 'd'+d+'e'+e+'_'+f; }
+var DB = (function(){ try { return JSON.parse(localStorage.getItem('gymlog5')||'{}'); } catch(e) { return {}; } })();
+function saveDB() { try { localStorage.setItem('gymlog5', JSON.stringify(DB)); } catch(e) {} }
+function key(d,e,f) { return 'd'+d+'e'+e+'_'+f; }
+
+var restTimers = {};
 
 function buildAll() {
   DAYS.forEach(function(day, di) {
-    var container = document.getElementById('exlist-'+di);
-    container.innerHTML = '';
+    var el = document.getElementById('el-'+di);
+    el.innerHTML = '';
     day.exercises.forEach(function(ex, ei) {
       var card = document.createElement('div');
-      card.className = 'exercise-card' + (ex.glute ? ' glute-focus' : '');
-      card.id = 'card-'+di+'-'+ei;
-      var rawSets = DB[k(di,ei,'sets')] || [];
-      var setsData = [];
-      for(var si=0; si<ex.sets; si++) {
-        var s = rawSets[si] || {};
-        setsData.push({ done: s.done || false, weight: s.weight || '' });
+      card.className = 'ex-card' + (ex.glute ? ' glute' : '');
+      card.id = 'ec-'+di+'-'+ei;
+
+      var rawSets = DB[key(di,ei,'sets')] || [];
+      var sets = [];
+      var i;
+      for(i=0; i<ex.sets; i++) {
+        var s = rawSets[i] || {};
+        sets.push({ done: s.done||false, w: s.w||'' });
       }
-      var doneCount = setsData.filter(function(s){return s.done;}).length;
-      var savedNotes = DB[k(di,ei,'notes')] || '';
-      var savedYt = DB[k(di,ei,'yt')] || '';
-      var setRowsHTML = '';
-      setsData.forEach(function(s, si) {
-        setRowsHTML += '<div class="set-row '+(s.done?'done':'')+'" id="setrow-'+di+'-'+ei+'-'+si+'">' +
-          '<div class="set-label">Serie '+(si+1)+'</div>' +
-          '<input class="set-weight-input" type="number" min="0" step="0.5" placeholder="kg" value="'+s.weight+'" id="sw-'+di+'-'+ei+'-'+si+'" onchange="saveW('+di+','+ei+','+si+')">' +
-          '<span class="set-kg">kg</span>' +
-          '<button class="set-check" onclick="toggleSet('+di+','+ei+','+si+')">&#10003;</button>' +
+      var done = 0;
+      for(i=0; i<sets.length; i++) { if(sets[i].done) done++; }
+      var notes = DB[key(di,ei,'notes')] || '';
+      var yt = DB[key(di,ei,'yt')] || '';
+
+      var setHTML = '';
+      for(i=0; i<sets.length; i++) {
+        var s = sets[i];
+        var pr = getPR(di, ei);
+        var isPR = s.w && pr && parseFloat(s.w) >= pr;
+        setHTML += '<div class="set-row'+(s.done?' done':'')+(isPR?' is-pr':'')+'" id="sr-'+di+'-'+ei+'-'+i+'">' +
+          '<div class="set-lbl">Serie '+(i+1)+'</div>' +
+          '<input class="set-w" type="number" min="0" step="0.5" placeholder="kg" value="'+(s.w||'')+'" id="sw-'+di+'-'+ei+'-'+i+'" onchange="onWeightChange('+di+','+ei+','+i+')">' +
+          '<span class="set-unit">kg</span>' +
+          '<span class="set-pr" id="sprlab-'+di+'-'+ei+'-'+i+'">PR</span>' +
+          '<button class="set-chk" onclick="toggleSet('+di+','+ei+','+i+')">&#10003;</button>' +
           '</div>';
-      });
-      var tipType = ex.glute ? 'glute' : 'general';
-      var tipLabel = ex.glute ? 'Como crecer el gluteo aqui' : 'Consejo de tecnica';
+      }
+
+      var tipClass = ex.glute ? 'glu' : 'gen';
+      var tipLbl = ex.glute ? 'Como crecer el gluteo aqui' : 'Consejo de tecnica';
+
       card.innerHTML =
-        '<div class="exercise-header" onclick="toggleCard('+di+','+ei+')">' +
-          '<div class="ex-number">'+(ei+1)+'</div>' +
-          '<div class="ex-info">' +
+        '<div class="ex-head" onclick="toggleCard('+di+','+ei+')">' +
+          '<div class="ex-num">'+(ei+1)+'</div>' +
+          '<div class="ex-body">' +
             '<div class="ex-name">'+ex.name+'</div>' +
-            '<div class="ex-sets-label">'+ex.sets+' series x '+ex.reps+'</div>' +
+            '<div class="ex-meta">'+ex.sets+' series x '+ex.reps+'</div>' +
           '</div>' +
           '<div class="ex-right">' +
-            (ex.glute ? '<div class="glute-tag">GLUTEO</div>' : '') +
-            '<div class="sets-done-badge '+(doneCount===ex.sets?'complete':'')+'" id="sdb-'+di+'-'+ei+'">'+doneCount+'/'+ex.sets+'</div>' +
-            '<button class="expand-btn">v</button>' +
+            (ex.glute ? '<div class="gtag">GLUTEO</div>' : '') +
+            '<div class="badge'+(done===ex.sets?' done':'')+'" id="bd-'+di+'-'+ei+'">'+done+'/'+ex.sets+'</div>' +
+            '<div class="chevron">▾</div>' +
           '</div>' +
         '</div>' +
-        '<div class="exercise-panel">' +
-          '<div class="tip-box '+tipType+'"><div class="tip-box-label">'+tipLabel+'</div>'+ex.tip+'</div>' +
-          '<div class="sets-table">'+setRowsHTML+'</div>' +
-          '<div class="panel-label">Notas</div>' +
-          '<textarea class="notes-input" placeholder="Sensaciones, ajustes..." id="ni-'+di+'-'+ei+'" onblur="saveNotes('+di+','+ei+')">'+savedNotes+'</textarea>' +
-          '<div class="panel-label">Video de tecnica</div>' +
-          '<div class="yt-row">' +
-            '<input class="yt-input" type="url" placeholder="Pega el link de YouTube..." id="yti-'+di+'-'+ei+'" value="'+savedYt+'">' +
-            '<button class="yt-save-btn" onclick="saveYt('+di+','+ei+')">Guardar</button>' +
+        '<div class="ex-panel">' +
+          '<div class="tip '+tipClass+'"><div class="tip-lbl">'+tipLbl+'</div>'+ex.tip+'</div>' +
+          '<div class="rest-bar" id="rb-'+di+'-'+ei+'">' +
+            '<div class="rest-countdown" id="rc-'+di+'-'+ei+'">0</div>' +
+            '<div class="rest-label">Descanso activo</div>' +
+            '<div class="rest-skip" onclick="skipRest('+di+','+ei+')">Saltar</div>' +
           '</div>' +
-          '<div class="yt-link '+(savedYt?'visible':'')+'" id="ytd-'+di+'-'+ei+'">'+(savedYt?'<a href="'+savedYt+'" target="_blank">Ver video de tecnica</a>':'')+'</div>' +
+          '<div class="sets-wrap">'+setHTML+'</div>' +
+          '<div class="extras">' +
+            '<textarea class="notes-in" placeholder="Notas, sensaciones..." id="ni-'+di+'-'+ei+'" onblur="saveNotes('+di+','+ei+')">'+notes+'</textarea>' +
+            '<div class="yt-row">' +
+              '<input class="yt-in" type="url" placeholder="Link YouTube tecnica..." id="yi-'+di+'-'+ei+'" value="'+yt+'">' +
+              '<button class="yt-go" onclick="saveYt('+di+','+ei+')">Guardar</button>' +
+            '</div>' +
+            '<div class="yt-link'+(yt?' on':'')+'" id="yl-'+di+'-'+ei+'">' +
+              (yt ? '<a href="'+yt+'" target="_blank">▶ Ver video de tecnica</a>' : '') +
+            '</div>' +
+          '</div>' +
         '</div>';
-      container.appendChild(card);
+      el.appendChild(card);
     });
-    updateProgress(di);
+    updateProg(di);
   });
 }
 
-function toggleCard(di,ei) { document.getElementById('card-'+di+'-'+ei).classList.toggle('expanded'); }
+function toggleCard(di,ei) {
+  document.getElementById('ec-'+di+'-'+ei).classList.toggle('open');
+}
 
-function saveW(di,ei,si) {
+function getPR(di, ei) {
+  var prKey = 'pr_'+di+'_'+ei;
+  return DB[prKey] ? parseFloat(DB[prKey]) : null;
+}
+
+function updatePR(di, ei, val) {
+  var prKey = 'pr_'+di+'_'+ei;
+  var current = DB[prKey] ? parseFloat(DB[prKey]) : 0;
+  if (parseFloat(val) > current) {
+    DB[prKey] = parseFloat(val);
+    saveDB();
+    return true;
+  }
+  return false;
+}
+
+function onWeightChange(di,ei,si) {
   var val = document.getElementById('sw-'+di+'-'+ei+'-'+si).value;
+  var sets = DB[key(di,ei,'sets')] || [];
   var ex = DAYS[di].exercises[ei];
-  var sets = DB[k(di,ei,'sets')] || [];
   var newSets = [];
-  for(var i=0;i<ex.sets;i++) { var s=sets[i]||{}; newSets.push({done:s.done||false,weight:s.weight||}); }
-  newSets[si].weight = val;
-  DB[k(di,ei,'sets')] = newSets;
-  save(DB);
+  var i;
+  for(i=0;i<ex.sets;i++) { var s=sets[i]||{}; newSets.push({done:s.done||false,w:s.w||}); }
+  newSets[si].w = val;
+  DB[key(di,ei,'sets')] = newSets;
+  saveDB();
+  // check PR label
+  var pr = getPR(di,ei);
+  var row = document.getElementById('sr-'+di+'-'+ei+'-'+si);
+  var lbl = document.getElementById('sprlab-'+di+'-'+ei+'-'+si);
+  if (val && pr && parseFloat(val) >= pr) {
+    row.classList.add('is-pr');
+  } else {
+    row.classList.remove('is-pr');
+  }
 }
 
 function toggleSet(di,ei,si) {
   var ex = DAYS[di].exercises[ei];
-  var sets = DB[k(di,ei,'sets')] || [];
+  var sets = DB[key(di,ei,'sets')] || [];
   var newSets = [];
-  for(var i=0;i<ex.sets;i++) { var s=sets[i]||{}; newSets.push({done:s.done||false,weight:s.weight||}); }
+  var i;
+  for(i=0;i<ex.sets;i++) { var s=sets[i]||{}; newSets.push({done:s.done||false,w:s.w||}); }
   var wval = document.getElementById('sw-'+di+'-'+ei+'-'+si).value || '';
-  newSets[si] = {done:!newSets[si].done, weight:wval};
-  DB[k(di,ei,'sets')] = newSets;
-  save(DB);
-  document.getElementById('setrow-'+di+'-'+ei+'-'+si).classList.toggle('done', newSets[si].done);
-  var doneCount = newSets.filter(function(s){return s.done;}).length;
-  var badge = document.getElementById('sdb-'+di+'-'+ei);
+  newSets[si] = { done: !newSets[si].done, w: wval };
+  DB[key(di,ei,'sets')] = newSets;
+
+  // Check PR
+  if (newSets[si].done && wval) {
+    var isNew = updatePR(di, ei, wval);
+    if (isNew) { toast('Nuevo PR: '+wval+' kg!'); }
+  }
+
+  saveDB();
+
+  var row = document.getElementById('sr-'+di+'-'+ei+'-'+si);
+  row.classList.toggle('done', newSets[si].done);
+
+  var doneCount = newSets.filter(function(s){ return s.done; }).length;
+  var badge = document.getElementById('bd-'+di+'-'+ei);
   badge.textContent = doneCount+'/'+ex.sets;
-  badge.className = 'sets-done-badge' + (doneCount===ex.sets?' complete':'');
-  updateProgress(di);
+  badge.className = 'badge' + (doneCount===ex.sets?' done':'');
+
+  if (newSets[si].done) {
+    startRest(di, ei, ex.rest || 90);
+  } else {
+    stopRest(di, ei);
+  }
+
+  updateProg(di);
 }
 
-function saveNotes(di,ei) { DB[k(di,ei,'notes')] = document.getElementById('ni-'+di+'-'+ei).value; save(DB); }
+function startRest(di, ei, seconds) {
+  stopRest(di, ei);
+  var bar = document.getElementById('rb-'+di+'-'+ei);
+  var countdown = document.getElementById('rc-'+di+'-'+ei);
+  var remaining = seconds;
+  bar.classList.add('show');
+  countdown.textContent = remaining;
+  restTimers[di+'_'+ei] = setInterval(function() {
+    remaining--;
+    countdown.textContent = remaining;
+    if (remaining <= 0) {
+      stopRest(di, ei);
+      if (navigator.vibrate) { navigator.vibrate([200,100,200]); }
+    }
+  }, 1000);
+}
+
+function stopRest(di, ei) {
+  var k2 = di+'_'+ei;
+  if (restTimers[k2]) {
+    clearInterval(restTimers[k2]);
+    delete restTimers[k2];
+  }
+  var bar = document.getElementById('rb-'+di+'-'+ei);
+  if (bar) bar.classList.remove('show');
+}
+
+function skipRest(di, ei) { stopRest(di, ei); }
+
+function saveNotes(di,ei) {
+  DB[key(di,ei,'notes')] = document.getElementById('ni-'+di+'-'+ei).value;
+  saveDB();
+}
 
 function saveYt(di,ei) {
-  var val = document.getElementById('yti-'+di+'-'+ei).value.trim();
-  DB[k(di,ei,'yt')] = val; save(DB);
-  var display = document.getElementById('ytd-'+di+'-'+ei);
-  if(val) { display.innerHTML='<a href="'+val+'" target="_blank">Ver video de tecnica</a>'; display.className='yt-link visible'; }
-  else { display.innerHTML=''; display.className='yt-link'; }
-  showToast('Link guardado');
+  var val = document.getElementById('yi-'+di+'-'+ei).value.trim();
+  DB[key(di,ei,'yt')] = val;
+  saveDB();
+  var yl = document.getElementById('yl-'+di+'-'+ei);
+  if (val) {
+    yl.innerHTML = '<a href="'+val+'" target="_blank">▶ Ver video de tecnica</a>';
+    yl.className = 'yt-link on';
+  } else {
+    yl.innerHTML = '';
+    yl.className = 'yt-link';
+  }
+  toast('Link guardado');
 }
 
-function updateProgress(di) {
-  var exs = DAYS[di].exercises; var completed = 0;
+function updateProg(di) {
+  var exs = DAYS[di].exercises;
+  var completed = 0;
   exs.forEach(function(ex,ei) {
-    var sets = DB[k(di,ei,'sets')] || [];
-    if(sets.filter(function(s){return s&&s.done;}).length >= ex.sets) completed++;
+    var sets = DB[key(di,ei,'sets')] || [];
+    if (sets.filter(function(s){ return s && s.done; }).length >= ex.sets) completed++;
   });
-  document.getElementById('prog-'+di).style.width = (completed/exs.length*100)+'%';
-  document.getElementById('progt-'+di).textContent = completed+' / '+exs.length;
+  document.getElementById('pf-'+di).style.width = (completed/exs.length*100)+'%';
+  document.getElementById('pt-'+di).textContent = completed+'/'+exs.length;
 }
 
 function switchDay(idx) {
-  document.querySelectorAll('.day-tab').forEach(function(t,i){t.classList.toggle('active',i===idx);});
-  document.querySelectorAll('.day-content').forEach(function(c,i){c.classList.toggle('active',i===idx);});
+  document.querySelectorAll('.tab').forEach(function(t,i){ t.classList.toggle('on',i===idx); });
+  document.querySelectorAll('.day').forEach(function(d,i){ d.classList.toggle('on',i===idx); });
 }
 
-function showToast(msg) {
-  var t = document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-  setTimeout(function(){t.classList.remove('show');},2000);
+function openPR() {
+  var list = document.getElementById('pr-list');
+  list.innerHTML = '';
+  var found = false;
+  DAYS.forEach(function(day, di) {
+    day.exercises.forEach(function(ex, ei) {
+      var prKey = 'pr_'+di+'_'+ei;
+      if (DB[prKey]) {
+        found = true;
+        var item = document.createElement('div');
+        item.className = 'pr-item';
+        item.innerHTML = '<div class="pr-ex">'+ex.name+'</div><div class="pr-val">'+DB[prKey]+' kg</div>';
+        list.appendChild(item);
+      }
+    });
+  });
+  if (!found) {
+    list.innerHTML = '<div class="no-pr">Aun no tienes records. Completa series con peso para verlos aqui.</div>';
+  }
+  document.getElementById('pr-overlay').classList.add('on');
+}
+
+function closePR() { document.getElementById('pr-overlay').classList.remove('on'); }
+function closePRifOutside(e) { if (e.target===document.getElementById('pr-overlay')) closePR(); }
+
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+// Show add to home screen hint on mobile Safari
+function closeA2H() {
+  document.getElementById('a2h').classList.remove('show');
+  localStorage.setItem('a2h_closed','1');
+}
+if (!localStorage.getItem('a2h_closed') && /iphone|ipad|ipod/i.test(navigator.userAgent) && !navigator.standalone) {
+  document.getElementById('a2h').classList.add('show');
 }
 
 buildAll();
