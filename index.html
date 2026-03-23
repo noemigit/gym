@@ -16,7 +16,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overscroll-behavior:none;}
-body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-size:15px;padding-bottom:110px;}
+body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-size:15px;padding-bottom:140px;}
 
 /* ── HEADER ── */
 .hdr{padding:16px 18px 12px;border-bottom:1px solid var(--b);position:sticky;top:0;background:rgba(8,8,9,.94);backdrop-filter:blur(16px);z-index:200;display:flex;align-items:center;justify-content:space-between;}
@@ -44,7 +44,7 @@ body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-s
 .dtab.d3.on{background:#48B87A;border-color:#48B87A;color:#fff;}
 
 /* ── DAY CONTENT ── */
-.daybody{display:none;padding:16px 16px 32px;max-width:600px;margin:0 auto;}
+.daybody{display:none;padding:16px 16px 48px;max-width:600px;margin:0 auto;}
 .daybody.on{display:block;}
 .day-hero{padding:4px 0 16px;}
 .day-emoji{font-size:22px;margin-bottom:4px;}
@@ -62,7 +62,11 @@ body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-s
 .exc.glute{border-left:2px solid var(--a);}
 .exc.alldone{border-color:rgba(200,240,74,.25);}
 .exh{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;}
-.exn{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--t3);width:16px;flex-shrink:0;}
+.exn{font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:var(--t3);width:22px;height:22px;border-radius:50%;border:1.5px solid var(--b2);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .2s;}
+.exn:hover{border-color:var(--acc);color:var(--acc);}
+.exn.exndone{background:var(--acc);border-color:var(--acc);color:#000;}
+.exc.alldone{background:rgba(200,240,74,.04);border-color:rgba(200,240,74,.25);}
+.exc.alldone .exname{color:var(--acc);}
 .exi{flex:1;min-width:0;}
 .exname{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .exmeta{font-size:11px;color:var(--t2);}
@@ -302,7 +306,7 @@ var DAYS = [
     exercises:[
       {name:"Deltoides y tríceps en máquina", sets:"4 × 12-10-8-6", muscles:"Deltoides · Tríceps",
        tip:"Codos a la altura de los hombros al empujar. Sube controlado sin bloquear los codos del todo. Abdomen apretado durante todo el movimiento para proteger la lumbar.",
-       mp4:"https://media.musclewiki.com/media/uploads/videos/branded/male-Machine-machine-shoulder-press-front.mp4",
+       mp4:"https://media.musclewiki.com/media/uploads/videos/branded/male-Machine-machine-overhead-press-front.mp4",
        youtube:"https://youtube.com/shorts/9EBmwjZ_7wk"},
       {name:"Jalón tras nuca", sets:"4 × 12-10-8-6", muscles:"Dorsal · Trapecio",
        tip:"Inclina el torso ligeramente hacia atrás y lleva la barra hacia la parte alta del pecho. Piensa en llevar los codos hacia las caderas — eso activa el dorsal. Baja controlado, no dejes caer el peso.",
@@ -318,7 +322,7 @@ var DAYS = [
        youtube:"https://youtube.com/shorts/UFcaodmbXd8"},
       {name:"Hiperextensiones", sets:"4 × 15-12-12-10", muscles:"Lumbares · Glúteo · Isquiotibiales",
        tip:"Baja controlado, sube hasta línea recta — no hiperextendas la columna. Puedes cruzar los brazos en el pecho o sostener una mancuerna para más dificultad.",
-       mp4:"https://media.musclewiki.com/media/uploads/videos/branded/male-Bodyweight-back-extension-front.mp4",
+       mp4:"https://media.musclewiki.com/media/uploads/videos/branded/male-Bodyweight-hyperextension-front.mp4",
        youtube:"https://youtube.com/shorts/Hn5UVCdUHzQ"},
       {name:"Abs crunch en máquina", sets:"4 × máx", muscles:"Abdomen · Core",
        tip:"Redondea la espalda al bajar contrayendo el abdomen. Sin impulso — el movimiento tiene que venir del core, no del cuello ni los brazos.",
@@ -355,7 +359,7 @@ var DAYS = [
        mp4:"https://media.musclewiki.com/media/uploads/videos/branded/male-Cable-cable-glute-kickback-front.mp4"},
       {name:"Patada de glúteo en polea", sets:"3 × 15-12-12", muscles:"Glúteo mayor", glute:true,
        tip:"Cable en el tobillo, cuerpo inclinado sujetándote a la máquina. Extiende la pierna hacia atrás y arriba apretando el glúteo. 1 segundo de contracción arriba. Ve despacio — el glúteo crece con contracción controlada. Cero impacto en rodilla.",
-       mp4:"https://media.musclewiki.com/media/uploads/videos/branded/male-Cable-cable-glute-kickback-front.mp4"}
+       mp4:"https://media.musclewiki.com/media/uploads/videos/branded/male-Cable-cable-hip-extension-front.mp4"}
     ]
   },
   {
@@ -382,7 +386,7 @@ var DAYS = [
        youtube:"https://www.youtube.com/shorts/mCqFdXP8xJA"},
       {name:"Fondos entre bancos (tríceps)", sets:"3 × 12-10-10", muscles:"Tríceps · Pectoral",
        tip:"Manos cerca del cuerpo, codos hacia atrás no hacia los lados. Baja hasta 90°. Si es fácil eleva los pies.",
-       mp4:"https://media.musclewiki.com/media/uploads/videos/branded/male-Bodyweight-bench-dip-front.mp4"},
+       mp4:"https://media.musclewiki.com/media/uploads/videos/branded/male-Bodyweight-tricep-dips-front.mp4"},
       {name:"Abs crunch en máquina", sets:"4 × máx", muscles:"Abdomen · Core",
        tip:"Redondea la espalda al bajar contrayendo el abdomen. Sin impulso — el movimiento tiene que venir del core.",
        mp4:"https://media.musclewiki.com/media/uploads/videos/branded/male-Machine-machine-crunch-front.mp4"},
@@ -549,7 +553,9 @@ function buildUI(){
         var isPR = w && pr && parseFloat(w)>=pr;
         setRows += '<div class="setrow'+(w&&isDone?" done":"")+(isPR?" isnewpr":"")+'" id="sr'+di+'_'+ei+'_'+si+'">';
         setRows += '<div class="setlbl">Serie '+(si+1)+'</div>';
-        setRows += '<input class="setw" type="number" min="0" step="0.5" placeholder="'+s.reps+'" value="'+(w||'')+'" id="sw'+di+'_'+ei+'_'+si+'" inputmode="decimal" onchange="onWChange('+di+','+ei+','+si+')">';
+        var lastW = getLastWeight(ex.name, si);
+        var pholder = lastW ? '↩'+lastW+'kg' : s.reps;
+        setRows += '<input class="setw" type="number" min="0" step="0.5" placeholder="'+pholder+'" value="'+(w||'')+'" id="sw'+di+'_'+ei+'_'+si+'" inputmode="decimal" onchange="onWChange('+di+','+ei+','+si+')">';
         setRows += '<span class="setunit">kg</span>';
         setRows += '<span class="setpr">PR</span>';
         setRows += '<button class="setchk" onclick="toggleSet('+di+','+ei+','+si+')">✓</button>';
@@ -567,7 +573,7 @@ function buildUI(){
 
       html += '<div class="exc'+(ex.glute?" glute":"")+(isDone?" alldone":"")+'" id="exc'+di+'_'+ei+'">';
       html += '<div class="exh" onclick="toggleEx('+di+','+ei+')">';
-      html += '<div class="exn">'+(ei+1)+'</div>';
+      html += '<div class="exn'+(isDone?' exndone':'')+'" id="exn'+di+'_'+ei+'" onclick="event.stopPropagation();markDone('+di+','+ei+')" title="Marcar como hecho">'+(isDone?'✓':(ei+1))+'</div>';
       html += '<div class="exi"><div class="exname">'+ex.name+'</div><div class="exmeta">'+ex.sets+'</div></div>';
       html += '<div class="exr">'+(ex.glute?'<div class="gtag">GLÚTEO</div>':'')+
               '<div class="badge'+(isDone?" ok":"")+'" id="bd'+di+'_'+ei+'">'+
@@ -579,10 +585,7 @@ function buildUI(){
       html += '<div class="tip '+tipClass+'"><div class="tiplbl">'+tipLbl+'</div>'+ex.tip+'</div>';
       html += '<div class="mtags">'+mtags+'</div>';
       html += '<div class="setswrap">'+setRows+'</div>';
-      if(lastHint) html += '<div class="lasthint">↩ Última vez: '+lastHint+' kg</div>';
-      html += '<div style="padding:10px 14px 2px">';
-      html += '<button onclick="markDone('+di+','+ei+')" id="dbn'+di+'_'+ei+'" style="width:100%;padding:9px;border-radius:8px;border:1px solid '+(isDone?'rgba(200,240,74,.3)':'var(--b2)')+';background:'+(isDone?'rgba(200,240,74,.08)':'var(--sur)')+';color:'+(isDone?'var(--acc)':'var(--t3)')+';font-family:Syne,sans-serif;font-size:12px;font-weight:700;cursor:pointer">'+(isDone?'✓ Completado':'Marcar como hecho')+'</button>';
-      html += '</div>';
+
       html += '<div class="extras">';
       html += '<textarea class="notein" placeholder="📝 Notas, sensaciones..." id="ni'+di+'_'+ei+'" onblur="saveNote('+di+','+ei+')">'+note+'</textarea>';
       if(ex.youtube){
@@ -950,19 +953,15 @@ function toast(msg){
 
 
 function markDone(di,ei){
-  var ex = DAYS[di].exercises[ei];
-  var sets = parseSets(ex.sets);
   var current = appData[gk(di,ei,"done",0)];
   var newVal = !current;
   appData[gk(di,ei,"done",0)] = newVal;
   sd(appData);
-  // Update button
-  var btn = document.getElementById("dbn"+di+"_"+ei);
-  if(btn){
-    btn.textContent = newVal ? "✓ Completado" : "Marcar como hecho";
-    btn.style.borderColor = newVal ? "rgba(200,240,74,.3)" : "var(--b2)";
-    btn.style.background = newVal ? "rgba(200,240,74,.08)" : "var(--sur)";
-    btn.style.color = newVal ? "var(--acc)" : "var(--t3)";
+  // Update circle number
+  var num = document.getElementById("exn"+di+"_"+ei);
+  if(num){
+    num.textContent = newVal ? "✓" : (ei+1);
+    num.className = "exn" + (newVal?" exndone":"");
   }
   // Update card
   var card = document.getElementById("exc"+di+"_"+ei);
